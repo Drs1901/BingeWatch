@@ -46,7 +46,7 @@ export default function Watch() {
   let modifiedType = type === 'series' ? 'tv' : type;
 
   let url = `https://vidsrc.xyz/embed/${modifiedType}/${id}`;
-  url += `?v=${import.meta.env.VITE_APP_VERSION}&n=${import.meta.env.VITE_APP_NAME}`;
+  url += `?v=${import.meta.env.VITE_APP_VERSION}&n=${import.meta.env.VITE_APP_NAME}&ds_lang=he`;
 
   if (window.location.origin) url += `&o=${encodeURIComponent(window.location.origin)}`;
   if (type === 'series') url += `&s=${season}&e=${episode}`;
