@@ -43,15 +43,18 @@ export default function Watch() {
   }
 
   function getSource() {
-    const mediaType = type === 'series' ? 'tv' : 'movie';
-    let url = `https://player.videasy.net/${mediaType}/${id}`;
-    
-    if (type === 'series') {
-      url = `https://player.videasy.net/${mediaType}/${id}/${season}/${episode}`;
-    }
-  
-    return url;
-  }
+  let modifiedType = type === 'series' ? 'tv' : type;
+
+  let url = `https://vidsrc.xyz/embed/${modifiedType}/${id}`;
+  url += `?v=${import.meta.env.VITE_APP_VERSION}&n=${import.meta.env.VITE_APP_NAME}&ds_lang=he`;
+
+  if (window.location.origin) url += `&o=${encodeURIComponent(window.location.origin)}`;
+  if (type === 'series') url += `&s=${season}&e=${episode}`;
+
+  return url;
+}
+
+
 
   function getTitle() {
     let title = data ? data.title : 'Watch';
@@ -139,7 +142,7 @@ export default function Watch() {
       JSON.stringify({
         season: parseInt(s),
         episode: parseInt(e)
-      })  
+      })
     );
   }, [id, search]);
 
@@ -168,14 +171,7 @@ export default function Watch() {
 
         <h2 className="player-title">{getTitle()}</h2>
 
-        <iframe 
-          allowFullScreen 
-          referrerPolicy="origin" 
-          title={getTitle()} 
-          src={getSource()}
-          sandbox="allow-same-origin allow-scripts allow-forms allow-presentation"
-          allow="autoplay; fullscreen; picture-in-picture"
-        ></iframe>
+        <iframe allowFullScreen referrerPolicy="origin" title={getTitle()} src={getSource()}></iframe>
       </div>
     </>
   );
