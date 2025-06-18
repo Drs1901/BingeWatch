@@ -69,7 +69,7 @@ const PLAYERS: Record<PlayerSource, PlayerConfig> = {
     ],
     adBlockingMode: 'strict',
     getUrl: ({ mediaType, id, season, episode }) => {
-      const baseUrl = 'https://vidsrc.io/';
+      const baseUrl = 'https://vidsrc.io/embed';
       const params = new URLSearchParams({
         color: '3B82F6',
         autoplayNextEpisode: 'true',
