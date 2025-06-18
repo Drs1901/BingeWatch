@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { Calendar, Clock, Star, Award, Tv, Film, ChevronDown, Play, Info, Share2 } from 'lucide-react';
+import { Calendar, Clock, Star, Tv, Film, ChevronDown, Play, Info, Share2 } from 'lucide-react';
 import { getDetails, getSeasonDetails, getRecommendations } from '../services/tmdb';
 import VideoPlayer from '../components/VideoPlayer';
 import MovieCard from '../components/MovieCard';
@@ -13,6 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { GenreBadge } from '../components/GenreBadge';
 import { createSEOProps, formatMovieTitle } from '../utils/seo-helper';
+import { useTranslation } from 'react-i18next';
 
 import { Movie, TVShow, Genre, Season, Episode } from '../types/tmdb';
 
@@ -48,6 +49,7 @@ interface TVShowDetails extends TVShow {
 type MediaDetails = MovieDetails | TVShowDetails;
 
 export const Watch = () => {
+  const { t, i18n } = useTranslation();
   const { mediaType = 'movie', id } = useParams<{ mediaType: 'movie' | 'tv'; id: string }>();
   const { user } = useAuth();
   const [selectedSeason, setSelectedSeason] = useState(1);
@@ -56,7 +58,7 @@ export const Watch = () => {
 
   // Get last watched episode
   const { data: lastWatched } = useQuery(
-    ['lastWatched', mediaType, id],
+    ['lastWatched', mediaType, id, i18n.language],
     async () => {
       if (!user || mediaType !== 'tv' || !id) return null;
 
@@ -82,7 +84,7 @@ export const Watch = () => {
 
   // Get show details
   const { data: details, isLoading: isDetailsLoading } = useQuery<MediaDetails>(
-    ['details', mediaType, id],
+    ['details', mediaType, id, i18n.language],
     () => getDetails(mediaType!, parseInt(id!)),
     {
       enabled: !!mediaType && !!id,
@@ -91,16 +93,16 @@ export const Watch = () => {
 
   // Get season details
   const { data: seasonDetails } = useQuery(
-    ['seasonDetails', id, selectedSeason],
+    ['seasonDetails', id, selectedSeason, i18n.language],
     () => getSeasonDetails(parseInt(id!), selectedSeason),
-    { 
-      enabled: mediaType === 'tv' && !!id && !!selectedSeason 
+    {
+      enabled: mediaType === 'tv' && !!id && !!selectedSeason,
     }
   );
 
   // Get recommendations
   const { data: recommendations } = useQuery(
-    ['recommendations', mediaType, id],
+    ['recommendations', mediaType, id, i18n.language],
     () => getRecommendations(mediaType!, parseInt(id!)),
     {
       enabled: !!mediaType && !!id,
@@ -114,7 +116,6 @@ export const Watch = () => {
       setSelectedEpisode(lastWatched.episode_number || 1);
     }
   }, [lastWatched, mediaType]);
-
 
   if (isDetailsLoading || !details) {
     return (
@@ -156,21 +157,27 @@ export const Watch = () => {
   // Create enhanced SEO configuration for movie/TV show
   const year = releaseDate ? new Date(releaseDate).getFullYear() : undefined;
   const formattedTitle = formatMovieTitle(title, year);
-  
+
   // Create SEO props with media-specific data
   const seoProps = createSEOProps({
     title: formattedTitle,
-    description: `Stream ${title} (${year}) online free in HD on BingeWatch. ${details.overview?.substring(0, 150)}...`,
+    description: t('watch.seo_description', {
+      title,
+      year,
+      overview: details.overview?.substring(0, 150),
+    }),
     type: mediaType === 'movie' ? 'video.movie' : 'video.episode',
     mediaType,
     id: id,
-    image: details.backdrop_path ? `https://image.tmdb.org/t/p/w1280${details.backdrop_path}` : undefined,
+    image: details.backdrop_path
+      ? `https://image.tmdb.org/t/p/w1280${details.backdrop_path}`
+      : undefined,
     publishedAt: releaseDate,
     rating: details.vote_average,
     duration: runtime,
     genres: details.genres?.map((g: Genre) => g.name),
     actors: details.credits?.cast?.slice(0, 5).map((actor: CastMember) => actor.name),
-    director: details.credits?.crew?.find((person: CrewMember) => person.job === 'Director')?.name
+    director: details.credits?.crew?.find((person: CrewMember) => person.job === 'Director')?.name,
   });
 
   return (
@@ -205,10 +212,10 @@ export const Watch = () => {
                   <div className="flex gap-2 mt-4">
                     <button className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 group">
                       <Play className="w-5 h-5 fill-current transition-transform duration-300 group-hover:scale-110" />
-                      <span className="font-medium">Watch Now</span>
+                      <span className="font-medium">{t('watch.watch_now')}</span>
                     </button>
                     <WatchlistButton mediaType={mediaType!} mediaId={id!} />
-                    <button 
+                    <button
                       onClick={handleShare}
                       className="p-3 bg-white/[0.05] text-gray-400 hover:text-white hover:bg-white/[0.1] rounded-lg transition-all duration-300 hover:scale-105 hover:-translate-y-0.5"
                     >
@@ -219,17 +226,21 @@ export const Watch = () => {
               </div>
 
               <div className="md:w-2/3 lg:w-3/4">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white via-primary-200 to-white">{title}</h1>
-                
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white via-primary-200 to-white">
+                  {title}
+                </h1>
+
                 <div className="flex flex-wrap gap-4 mb-6">
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500/20 rounded-full backdrop-blur-sm transition-transform duration-300 hover:scale-110">
                     <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                    <span className="font-medium text-yellow-400">{details.vote_average.toFixed(1)}</span>
+                    <span className="font-medium text-yellow-400">
+                      {details.vote_average.toFixed(1)}
+                    </span>
                   </div>
                   {runtime && (
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full backdrop-blur-sm transition-transform duration-300 hover:scale-110">
                       <Clock className="w-5 h-5 text-gray-300" />
-                      <span className="text-gray-300">{runtime} min</span>
+                      <span className="text-gray-300">{t('watch.runtime_minutes', { runtime })}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full backdrop-blur-sm transition-transform duration-300 hover:scale-110">
@@ -237,7 +248,11 @@ export const Watch = () => {
                     <span className="text-gray-300">{new Date(releaseDate).getFullYear()}</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-500/20 rounded-full backdrop-blur-sm transition-transform duration-300 hover:scale-110">
-                    {mediaType === 'movie' ? <Film className="w-5 h-5 text-primary-400" /> : <Tv className="w-5 h-5 text-primary-400" />}
+                    {mediaType === 'movie' ? (
+                      <Film className="w-5 h-5 text-primary-400" />
+                    ) : (
+                      <Tv className="w-5 h-5 text-primary-400" />
+                    )}
                     <span className="text-primary-400 capitalize">{mediaType}</span>
                   </div>
                 </div>
@@ -263,9 +278,9 @@ export const Watch = () => {
                 </div>
 
                 <div className="mb-8">
-                  <VideoPlayer 
-                    mediaType={mediaType as 'movie' | 'tv'} 
-                    id={id!} 
+                  <VideoPlayer
+                    mediaType={mediaType as 'movie' | 'tv'}
+                    id={id!}
                     season={mediaType === 'tv' ? selectedSeason : undefined}
                     episode={mediaType === 'tv' ? selectedEpisode : undefined}
                     title={title}
@@ -275,37 +290,50 @@ export const Watch = () => {
                 {mediaType === 'tv' && isTVShow(details) && details.seasons && (
                   <div className="mb-8">
                     <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white via-primary-200 to-white">Episodes</h2>
+                      <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white via-primary-200 to-white">
+                        {t('watch.episodes')}
+                      </h2>
                       <div className="relative">
                         <button
                           onClick={() => setShowSeasons(!showSeasons)}
                           className="flex items-center gap-2 px-4 py-2 bg-white/[0.05] hover:bg-white/[0.1] rounded-lg transition-colors duration-200"
                         >
-                          <span className="text-white">Season {selectedSeason}</span>
-                          <ChevronDown className={cn(
-                            "w-4 h-4 text-gray-400 transition-transform duration-200",
-                            showSeasons && "transform rotate-180"
-                          )} />
+                          <span className="text-white">
+                            {t('watch.season_selected', { selectedSeason })}
+                          </span>
+                          <ChevronDown
+                            className={cn(
+                              'w-4 h-4 text-gray-400 transition-transform duration-200',
+                              showSeasons && 'transform rotate-180'
+                            )}
+                          />
                         </button>
                         {showSeasons && (
                           <div className="absolute top-full right-0 mt-2 w-48 bg-[#1a1a1a] rounded-lg shadow-xl border border-white/[0.05] py-1 z-50">
-                            {isTVShow(details) && details.seasons.map((season: Season) => (
-                              <button
-                                key={season.season_number}
-                                onClick={() => handleEpisodeSelect(season.season_number, 1)}
-                                className={cn(
-                                  "flex items-center w-full px-4 py-2 text-left transition-colors duration-200",
-                                  selectedSeason === season.season_number
-                                    ? "bg-primary-500/20 text-primary-400"
-                                    : "text-gray-300 hover:bg-white/[0.05] hover:text-white"
-                                )}
-                              >
-                                <span>Season {season.season_number}</span>
-                                <span className="ml-auto text-sm text-gray-500">
-                                  {season.episode_count} eps
-                                </span>
-                              </button>
-                            ))}
+                            {isTVShow(details) &&
+                              details.seasons.map((season: Season) => (
+                                <button
+                                  key={season.season_number}
+                                  onClick={() => handleEpisodeSelect(season.season_number, 1)}
+                                  className={cn(
+                                    'flex items-center w-full px-4 py-2 text-left transition-colors duration-200',
+                                    selectedSeason === season.season_number
+                                      ? 'bg-primary-500/20 text-primary-400'
+                                      : 'text-gray-300 hover:bg-white/[0.05] hover:text-white'
+                                  )}
+                                >
+                                  <span>
+                                    {t('watch.season_number', {
+                                      season_number: season.season_number,
+                                    })}
+                                  </span>
+                                  <span className="ml-auto text-sm text-gray-500">
+                                    {t('watch.episode_count', {
+                                      episode_count: season.episode_count,
+                                    })}
+                                  </span>
+                                </button>
+                              ))}
                           </div>
                         )}
                       </div>
@@ -314,12 +342,14 @@ export const Watch = () => {
                       {seasonDetails?.episodes.map((episode: Episode) => (
                         <button
                           key={episode.episode_number}
-                          onClick={() => handleEpisodeSelect(selectedSeason, episode.episode_number)}
+                          onClick={() =>
+                            handleEpisodeSelect(selectedSeason, episode.episode_number)
+                          }
                           className={cn(
-                            "w-full text-left p-4 rounded-lg transition-all duration-300 group hover:scale-[1.01]",
+                            'w-full text-left p-4 rounded-lg transition-all duration-300 group hover:scale-[1.01]',
                             episode.episode_number === selectedEpisode
-                              ? "bg-primary-500/20 border border-primary-500/50"
-                              : "bg-white/[0.03] hover:bg-white/[0.06]"
+                              ? 'bg-primary-500/20 border border-primary-500/50'
+                              : 'bg-white/[0.03] hover:bg-white/[0.06]'
                           )}
                         >
                           <div className="flex items-center gap-4">
@@ -340,7 +370,10 @@ export const Watch = () => {
                             <div className="flex-1">
                               <div className="flex items-center justify-between">
                                 <h3 className="font-medium text-lg group-hover:text-primary-400 transition-colors duration-300">
-                                  Episode {episode.episode_number}: {episode.name}
+                                  {t('watch.episode_title', {
+                                    episode_number: episode.episode_number,
+                                    episode_name: episode.name,
+                                  })}
                                 </h3>
                                 <span className="text-sm text-gray-400">
                                   {new Date(episode.air_date).toLocaleDateString()}
@@ -363,11 +396,11 @@ export const Watch = () => {
                   <Comments mediaType={mediaType!} mediaId={id!} />
                 </div>
 
-
-
                 {recommendations && recommendations.length > 0 && (
                   <div>
-                    <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white via-primary-200 to-white">You May Also Like</h2>
+                    <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white via-primary-200 to-white">
+                      {t('watch.you_may_also_like')}
+                    </h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       {recommendations.slice(0, 8).map((item: Movie | TVShow) => (
                         <MovieCard

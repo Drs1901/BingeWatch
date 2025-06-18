@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 import { Bookmark, Loader } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { getDetails } from '../services/tmdb';
 import MovieCard from '../components/MovieCard';
@@ -9,9 +10,10 @@ import { useAuth } from '../contexts/AuthContext';
 
 export const Watchlist = () => {
   const { user } = useAuth();
+  const { t, i18n } = useTranslation();
 
   const { data: watchlist, isLoading } = useQuery(
-    ['watchlist', user?.id],
+    ['watchlist', user?.id, i18n.language],
     async () => {
       const { data, error } = await supabase
         .from('watchlist')
@@ -47,22 +49,22 @@ export const Watchlist = () => {
   return (
     <>
       <SEO
-        title="My Watchlist"
-        description="Your saved movies and TV shows to watch later."
+        title={t('watchlist.title')}
+        description={t('watchlist.seo_description')}
       />
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
           <Bookmark className="w-6 h-6 text-primary-500" />
-          <h1 className="text-2xl font-bold text-white">My Watchlist</h1>
+          <h1 className="text-2xl font-bold text-white">{t('watchlist.heading')}</h1>
         </div>
 
         {!watchlist || watchlist.length === 0 ? (
           <div className="text-center py-12 bg-white/[0.03] rounded-2xl">
             <Bookmark className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">Your watchlist is empty</h2>
+            <h2 className="text-xl font-semibold text-white mb-2">{t('watchlist.empty_title')}</h2>
             <p className="text-gray-400">
-              Start adding movies and TV shows to your watchlist to watch them later.
+              {t('watchlist.empty_message')}
             </p>
           </div>
         ) : (

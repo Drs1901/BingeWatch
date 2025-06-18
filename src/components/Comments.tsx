@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { MessageSquare, ThumbsUp, ThumbsDown, Trash2, AlertCircle } from 'lucide-react';
 import { cn } from '../utils/cn';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 interface Comment {
   id: string;
@@ -25,6 +26,7 @@ interface CommentsProps {
 }
 
 export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -67,7 +69,7 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
       }
     } catch (error) {
       console.error('Error fetching comments:', error);
-      toast.error('Failed to load comments');
+      toast.error(t('comments.failed_to_load'));
     } finally {
       setIsLoading(false);
     }
@@ -97,12 +99,12 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast.error('Please sign in to comment');
+      toast.error(t('comments.sign_in_to_comment'));
       return;
     }
 
     if (!newComment.trim()) {
-      toast.error('Comment cannot be empty');
+      toast.error(t('comments.comment_cannot_be_empty'));
       return;
     }
 
@@ -120,10 +122,10 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
       if (error) throw error;
 
       setNewComment('');
-      toast.success('Comment posted successfully');
+      toast.success(t('comments.comment_posted_successfully'));
     } catch (error) {
       console.error('Error posting comment:', error);
-      toast.error('Failed to post comment');
+      toast.error(t('comments.failed_to_post'));
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +133,7 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
 
   const handleReaction = async (commentId: string, reactionType: 'like' | 'dislike') => {
     if (!user) {
-      toast.error('Please sign in to react to comments');
+      toast.error(t('comments.sign_in_to_react'));
       return;
     }
 
@@ -151,7 +153,8 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
           if (c.id === commentId) {
             return {
               ...c,
-              [reactionType + 's']: c[reactionType + 's'] - 1,
+              likes: c.likes - (reactionType === 'like' ? 1 : 0),
+              dislikes: c.dislikes - (reactionType === 'dislike' ? 1 : 0),
               user_reaction: undefined
             };
           }
@@ -169,10 +172,12 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
 
         setComments(comments.map(c => {
           if (c.id === commentId) {
+            const newLikes = c.likes + (reactionType === 'like' ? 1 : 0) - (currentReaction === 'like' ? 1 : 0);
+            const newDislikes = c.dislikes + (reactionType === 'dislike' ? 1 : 0) - (currentReaction === 'dislike' ? 1 : 0);
             return {
               ...c,
-              [reactionType + 's']: c[reactionType + 's'] + 1,
-              [(currentReaction || '') + 's']: currentReaction ? c[currentReaction + 's'] - 1 : c[currentReaction + 's'],
+              likes: newLikes,
+              dislikes: newDislikes,
               user_reaction: reactionType
             };
           }
@@ -181,7 +186,7 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
       }
     } catch (error) {
       console.error('Error updating reaction:', error);
-      toast.error('Failed to update reaction');
+      toast.error(t('comments.failed_to_update_reaction'));
     }
   };
 
@@ -198,10 +203,10 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
       if (error) throw error;
 
       setComments(comments.filter(c => c.id !== commentId));
-      toast.success('Comment deleted successfully');
+      toast.success(t('comments.comment_deleted_successfully'));
     } catch (error) {
       console.error('Error deleting comment:', error);
-      toast.error('Failed to delete comment');
+      toast.error(t('comments.failed_to_delete'));
     }
   };
 
@@ -209,7 +214,7 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <MessageSquare className="w-6 h-6 text-primary-500" />
-        <h2 className="text-2xl font-bold text-white">Comments</h2>
+        <h2 className="text-2xl font-bold text-white">{t('comments.comments_title')}</h2>
       </div>
 
       {/* Comment Form */}
@@ -218,7 +223,7 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder={user ? "Write a comment..." : "Sign in to comment"}
+            placeholder={user ? t('comments.write_a_comment_placeholder') : t('comments.sign_in_to_comment_placeholder')}
             disabled={!user || isSubmitting}
             className={cn(
               "w-full min-h-[100px] px-4 py-3 bg-white/[0.03] border border-white/[0.05] rounded-xl",
@@ -231,7 +236,7 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
             <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl backdrop-blur-sm">
               <div className="flex items-center gap-2 text-gray-300">
                 <AlertCircle className="w-5 h-5" />
-                <span>Please sign in to comment</span>
+                <span>{t('comments.sign_in_to_comment')}</span>
               </div>
             </div>
           )}
@@ -242,7 +247,7 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
             disabled={!user || isSubmitting || !newComment.trim()}
             className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Posting...' : 'Post Comment'}
+            {isSubmitting ? t('comments.posting') : t('comments.post_comment')}
           </button>
         </div>
       </form>
@@ -259,7 +264,7 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
         ) : comments.length === 0 ? (
           <div className="text-center py-8">
             <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-400">No comments yet. Be the first to comment!</p>
+            <p className="text-gray-400">{t('comments.no_comments_yet')}</p>
           </div>
         ) : (
           comments.map((comment) => (
@@ -286,7 +291,7 @@ export const Comments: React.FC<CommentsProps> = ({ mediaType, mediaId }) => {
                   </div>
                   <div>
                     <div className="font-medium text-white">
-                      {comment.user.username || 'Anonymous'}
+                      {comment.user.username || t('comments.anonymous')}
                     </div>
                     <div className="text-sm text-gray-400">
                       {new Date(comment.created_at).toLocaleDateString()}

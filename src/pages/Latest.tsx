@@ -1,16 +1,19 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 import { Clock, Film, Tv } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getLatest } from '../services/tmdb';
 import MovieCard from '../components/MovieCard';
 import { SEO } from '../components/SEO';
 import { cn } from '../utils/cn';
+import { Movie, TVShow } from '../types/tmdb';
 
 export const Latest = () => {
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = React.useState<'movie' | 'tv'>('movie');
 
   const { data: latestItems, isLoading } = useQuery(
-    ['latest', activeTab],
+    ['latest', activeTab, i18n.language],
     () => getLatest(activeTab),
     {
       staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
@@ -19,16 +22,16 @@ export const Latest = () => {
   );
 
   const tabs = [
-    { id: 'movie' as const, label: 'Movies', icon: Film },
-    { id: 'tv' as const, label: 'TV Shows', icon: Tv },
+    { id: 'movie' as const, label: t('latest.movies_tab'), icon: Film },
+    { id: 'tv' as const, label: t('latest.tv_shows_tab'), icon: Tv },
   ];
 
   return (
     <>
       <SEO
-        title={`Latest ${activeTab === 'movie' ? 'Movies' : 'TV Shows'}`}
-        description={`Watch the latest ${activeTab === 'movie' ? 'movies in theaters' : 'TV shows on air'}. Stream new releases in HD quality.`}
-        keywords={`new ${activeTab === 'movie' ? 'movies' : 'tv shows'}, latest releases, watch online, streaming`}
+        title={t(activeTab === 'movie' ? 'latest.title_movies' : 'latest.title_tv_shows')}
+        description={t(activeTab === 'movie' ? 'latest.seo_description_movies' : 'latest.seo_description_tv_shows')}
+        keywords={t(activeTab === 'movie' ? 'latest.seo_keywords_movies' : 'latest.seo_keywords_tv_shows')}
         type="website"
       />
 
@@ -36,7 +39,7 @@ export const Latest = () => {
         <div className="flex items-center gap-3 mb-8">
           <Clock className="w-6 h-6 text-primary-500" />
           <h1 className="text-2xl font-bold text-white">
-            {activeTab === 'movie' ? 'Now Playing in Theaters' : 'Currently On Air'}
+            {t(activeTab === 'movie' ? 'latest.heading_movies' : 'latest.heading_tv_shows')}
           </h1>
         </div>
 
@@ -71,16 +74,16 @@ export const Latest = () => {
         ) : !latestItems || latestItems.length === 0 ? (
           <div className="text-center py-12 bg-white/[0.03] rounded-xl">
             <Clock className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">No {activeTab === 'movie' ? 'movies' : 'TV shows'} found</h2>
+            <h2 className="text-xl font-semibold text-white mb-2">{t(activeTab === 'movie' ? 'latest.no_movies_found' : 'latest.no_tv_shows_found')}</h2>
             <p className="text-gray-400">
-              {activeTab === 'movie'
-                ? 'There are no movies currently playing in theaters.'
-                : 'There are no TV shows currently on air.'}
+              {t(activeTab === 'movie'
+                ? 'latest.no_movies_message'
+                : 'latest.no_tv_shows_message')}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {latestItems.map((item) => (
+            {latestItems.map((item: Movie | TVShow) => (
               <MovieCard key={item.id} item={item} mediaType={activeTab} />
             ))}
           </div>

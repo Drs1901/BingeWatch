@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Movie, TVShow, Genre } from '../types/tmdb';
+import i18n from '../i18n';
 
 const TMDB_API_KEY = 'ea021b3b0775c8531592713ab727f254';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -11,8 +12,30 @@ const tmdbApi = axios.create({
     api_key: TMDB_API_KEY,
   },
   headers: {
-    'Cache-Control': 'public, max-age=3600',
+    'Cache-Control': 'no-cache',
   }
+});
+
+// Keep track of the current language and update it on change
+let currentLanguage = i18n.language;
+i18n.on('languageChanged', (lng) => {
+  currentLanguage = lng;
+});
+
+// Add a request interceptor to inject the language parameter
+tmdbApi.interceptors.request.use(config => {
+  const languageMap: { [key: string]: string } = {
+    he: 'he-IL',
+    en: 'en-US',
+  };
+  const tmdbLang = languageMap[currentLanguage] || 'en-US';
+
+  config.params = {
+    ...config.params,
+    language: tmdbLang,
+  };
+
+  return config;
 });
 
 // Add response interceptor for error handling
@@ -139,7 +162,6 @@ export const search = async (query: string, page: number = 1) => {
           query,
           page,
           include_adult: false,
-          language: 'en-US',
         }
       }),
       tmdbApi.get('/search/tv', {
@@ -147,7 +169,6 @@ export const search = async (query: string, page: number = 1) => {
           query,
           page,
           include_adult: false,
-          language: 'en-US',
         }
       })
     ]);

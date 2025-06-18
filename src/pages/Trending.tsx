@@ -1,43 +1,46 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 import { TrendingUp, Film, Tv } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getTrending } from '../services/tmdb';
 import MovieCard from '../components/MovieCard';
 import { SEO } from '../components/SEO';
 import { cn } from '../utils/cn';
+import { Movie, TVShow } from '../types/tmdb';
 
 export const Trending = () => {
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = React.useState<'movie' | 'tv'>('movie');
   const [timeWindow, setTimeWindow] = React.useState<'day' | 'week'>('week');
 
   const { data: trendingItems, isLoading } = useQuery(
-    ['trending', activeTab, timeWindow],
+    ['trending', activeTab, timeWindow, i18n.language],
     () => getTrending(activeTab, timeWindow)
   );
 
   const tabs = [
-    { id: 'movie' as const, label: 'Movies', icon: Film },
-    { id: 'tv' as const, label: 'TV Shows', icon: Tv },
+    { id: 'movie' as const, label: t('trending.movies_tab'), icon: Film },
+    { id: 'tv' as const, label: t('trending.tv_shows_tab'), icon: Tv },
   ];
 
   const timeWindows = [
-    { id: 'day' as const, label: 'Today' },
-    { id: 'week' as const, label: 'This Week' },
+    { id: 'day' as const, label: t('trending.today_filter') },
+    { id: 'week' as const, label: t('trending.this_week_filter') },
   ];
 
   return (
     <>
       <SEO
-        title="Trending Movies & TV Shows"
-        description="Discover what's trending in movies and TV shows. Watch the most popular content online in HD quality."
-        keywords="trending movies, trending tv shows, popular movies, popular tv shows, watch online"
+        title={t('trending.title')}
+        description={t('trending.seo_description')}
+        keywords={t('trending.seo_keywords')}
         type="website"
       />
 
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
           <TrendingUp className="w-6 h-6 text-primary-500" />
-          <h1 className="text-2xl font-bold text-white">Trending</h1>
+          <h1 className="text-2xl font-bold text-white">{t('trending.heading')}</h1>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -89,7 +92,7 @@ export const Trending = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {trendingItems?.map((item) => (
+            {trendingItems?.map((item: Movie | TVShow) => (
               <MovieCard key={item.id} item={item} mediaType={activeTab} />
             ))}
           </div>

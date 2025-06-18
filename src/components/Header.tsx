@@ -1,28 +1,17 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Film, Search as SearchIcon, Menu, X, TrendingUp, Clock, Star, Home, User, LogIn, UserPlus, Bookmark, History as HistoryIcon } from 'lucide-react';
+import { Film, Search as SearchIcon, Menu, X, TrendingUp, Clock, Star, Home, User, LogIn, UserPlus, Bookmark, History as HistoryIcon, Languages } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../utils/cn';
+import { useTranslation } from 'react-i18next';
 
 interface HeaderProps {
   isMenuOpen: boolean;
   setIsMenuOpen: (value: boolean) => void;
 }
 
-const navItems = [
-  { icon: Home, label: 'Home', path: '/' },
-  { icon: TrendingUp, label: 'Trending', path: '/trending' },
-  { icon: Clock, label: 'Latest', path: '/latest' },
-  { icon: Star, label: 'Top Rated', path: '/top-rated' },
-];
-
-const userNavItems = [
-  { icon: Bookmark, label: 'Watchlist', path: '/watchlist' },
-  { icon: HistoryIcon, label: 'History', path: '/history' },
-  { icon: User, label: 'Profile', path: '/profile' },
-];
-
 export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -30,8 +19,23 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
   const [isHeaderVisible, setIsHeaderVisible] = React.useState(true);
   const [lastScrollY, setLastScrollY] = React.useState(0);
   const [showProfileMenu, setShowProfileMenu] = React.useState(false);
+  const [showLanguageMenu, setShowLanguageMenu] = React.useState(false);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const profileMenuRef = React.useRef<HTMLDivElement>(null);
+  const languageMenuRef = React.useRef<HTMLDivElement>(null);
+
+  const navItems = [
+    { icon: Home, label: t('header.home'), path: '/' },
+    { icon: TrendingUp, label: t('header.trending'), path: '/trending' },
+    { icon: Clock, label: t('header.latest'), path: '/latest' },
+    { icon: Star, label: t('header.top_rated'), path: '/top-rated' },
+  ];
+
+  const userNavItems = [
+    { icon: Bookmark, label: t('header.watchlist'), path: '/watchlist' },
+    { icon: HistoryIcon, label: t('header.history'), path: '/history' },
+    { icon: User, label: t('header.profile'), path: '/profile' },
+  ];
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -56,6 +60,9 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
     const handleClickOutside = (e: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
         setShowProfileMenu(false);
+      }
+      if (languageMenuRef.current && !languageMenuRef.current.contains(e.target as Node)) {
+        setShowLanguageMenu(false);
       }
     };
 
@@ -153,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
                   ref={searchInputRef}
                   type="search"
                   name="search"
-                  placeholder="Search movies and TV shows..."
+                  placeholder={t('header.search_placeholder')}
                   className={cn(
                     "w-full h-10 px-4 pl-10 rounded-lg",
                     "bg-white/[0.03] border border-white/[0.06]",
@@ -193,7 +200,7 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
                       )}
                     </div>
                     <span className="text-gray-300 group-hover:text-white transition-colors">
-                      {user.user_metadata?.username || 'Profile'}
+                      {user.user_metadata?.username || t('header.profile')}
                     </span>
                   </button>
 
@@ -220,17 +227,41 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
                     className="relative z-50 flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white transition-all duration-200 hover:bg-white/[0.02] rounded-lg active:scale-95"
                   >
                     <LogIn className="w-4 h-4" />
-                    <span>Sign In</span>
+                    <span>{t('header.sign_in')}</span>
                   </Link>
                   <Link
                     to="/auth/register"
                     className="relative z-50 flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-200 shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:scale-[1.02] active:scale-95"
                   >
                     <UserPlus className="w-4 h-4" />
-                    <span>Sign Up</span>
+                    <span>{t('header.sign_up')}</span>
                   </Link>
                 </>
               )}
+               <div className="relative" ref={languageMenuRef}>
+                <button
+                  onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/[0.02] transition-colors group relative z-50"
+                >
+                  <Languages className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                </button>
+                {showLanguageMenu && (
+                  <div className="absolute right-0 mt-2 w-32 bg-[#1a1a1a] rounded-lg shadow-xl border border-white/[0.05] py-1 z-50">
+                    <button
+                      onClick={() => { i18n.changeLanguage('en'); setShowLanguageMenu(false); }}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-gray-300 hover:bg-white/[0.05] hover:text-white transition-colors"
+                    >
+                      English
+                    </button>
+                    <button
+                      onClick={() => { i18n.changeLanguage('he'); setShowLanguageMenu(false); }}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-gray-300 hover:bg-white/[0.05] hover:text-white transition-colors"
+                    >
+                      עברית
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <button
@@ -261,7 +292,7 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
                 <input
                   type="search"
                   name="search"
-                  placeholder="Search movies and TV shows..."
+                  placeholder={t('header.search_placeholder')}
                   className={cn(
                     "w-full h-10 px-4 pl-10 rounded-lg",
                     "bg-white/[0.03] border border-white/[0.06]",
@@ -339,7 +370,7 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
                         <User className="w-5 h-5 text-primary-400" />
                       )}
                     </div>
-                    <span>{user.user_metadata?.username || 'Profile Settings'}</span>
+                    <span>{user.user_metadata?.username || t('header.profile_settings')}</span>
                   </Link>
                 </>
               ) : (
@@ -350,7 +381,7 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
                     className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:text-white transition-all duration-200 bg-white/[0.03] hover:bg-white/[0.06] active:scale-95"
                   >
                     <LogIn className="w-4 h-4" />
-                    <span>Sign In</span>
+                    <span>{t('header.sign_in')}</span>
                   </Link>
                   <Link
                     to="/auth/register"
@@ -358,7 +389,7 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
                     className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-all duration-200 shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:scale-[1.02] active:scale-95"
                   >
                     <UserPlus className="w-4 h-4" />
-                    <span>Sign Up</span>
+                    <span>{t('header.sign_up')}</span>
                   </Link>
                 </div>
               )}

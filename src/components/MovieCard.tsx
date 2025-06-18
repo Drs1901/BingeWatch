@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Clock } from 'lucide-react';
 import type { Movie, TVShow } from '../types/tmdb';
+import { useTranslation } from 'react-i18next';
 
 interface MovieCardProps {
   item: Movie | TVShow;
@@ -9,6 +10,7 @@ interface MovieCardProps {
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({ item, mediaType }) => {
+  const { t } = useTranslation();
   const [isHovered, setIsHovered] = React.useState(false);
   const title = 'title' in item ? item.title : item.name;
   const releaseDate = 'release_date' in item ? item.release_date : item.first_air_date;
@@ -36,7 +38,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ item, mediaType }) => {
           />
         ) : (
           <div className="h-full w-full bg-gray-800 flex items-center justify-center">
-            <span className="text-gray-400">No Image</span>
+            <span className="text-gray-400">{t('movie_card.no_image')}</span>
           </div>
         )}
         <div 

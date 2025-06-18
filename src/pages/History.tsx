@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 import { History as HistoryIcon, Loader } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { getDetails } from '../services/tmdb';
 import MovieCard from '../components/MovieCard';
@@ -9,9 +10,10 @@ import { useAuth } from '../contexts/AuthContext';
 
 export const History = () => {
   const { user } = useAuth();
+  const { t, i18n } = useTranslation();
 
   const { data: history, isLoading } = useQuery(
-    ['history', user?.id],
+    ['history', user?.id, i18n.language],
     async () => {
       const { data, error } = await supabase
         .from('watch_history')
@@ -47,22 +49,22 @@ export const History = () => {
   return (
     <>
       <SEO
-        title="Watch History"
-        description="Your recently watched movies and TV shows."
+        title={t('history.title')}
+        description={t('history.seo_description')}
       />
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
           <HistoryIcon className="w-6 h-6 text-primary-500" />
-          <h1 className="text-2xl font-bold text-white">Watch History</h1>
+          <h1 className="text-2xl font-bold text-white">{t('history.heading')}</h1>
         </div>
 
         {!history || history.length === 0 ? (
           <div className="text-center py-12 bg-white/[0.03] rounded-2xl">
             <HistoryIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">No watch history yet</h2>
+            <h2 className="text-xl font-semibold text-white mb-2">{t('history.empty_title')}</h2>
             <p className="text-gray-400">
-              Your watch history will appear here once you start watching content.
+              {t('history.empty_message')}
             </p>
           </div>
         ) : (

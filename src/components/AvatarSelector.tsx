@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { useTranslation } from 'react-i18next';
 
 interface AvatarSelectorProps {
   value: string;
@@ -10,7 +11,8 @@ interface AvatarSelectorProps {
 }
 
 // Default avatar for new users
-export const DEFAULT_AVATAR = 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=Midnight&backgroundColor=2a2a2a&radius=50&mouth=cute&eyes=plain';
+export const DEFAULT_AVATAR =
+  'https://api.dicebear.com/9.x/fun-emoji/svg?seed=Midnight&backgroundColor=2a2a2a&radius=50&mouth=cute&eyes=plain';
 
 const AVATAR_OPTIONS = [
   // Dark skin tone avatars
@@ -34,7 +36,13 @@ const AVATAR_OPTIONS = [
   { seed: 'Crystal', backgroundColor: '3a3a3a', eyes: 'cute', mouth: 'lilSmile' },
 ];
 
-export const AvatarSelector: React.FC<AvatarSelectorProps> = ({ value, onChange, onClose, showModal = false }) => {
+export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
+  value,
+  onChange,
+  onClose,
+  showModal = false,
+}) => {
+  const { t } = useTranslation();
   const [selectedAvatar, setSelectedAvatar] = useState(value);
 
   const getAvatarUrl = (seed: string, backgroundColor: string, eyes: string, mouth: string) => {
@@ -54,11 +62,11 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({ value, onChange,
       >
         <img
           src={value || DEFAULT_AVATAR}
-          alt="Current Avatar"
+          alt={t('avatar_selector.current_avatar')}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <span className="text-white text-sm font-medium">Change</span>
+          <span className="text-white text-sm font-medium">{t('avatar_selector.change')}</span>
         </div>
       </button>
     );
@@ -68,7 +76,7 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({ value, onChange,
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
       <div className="relative bg-[#1a1a1a] rounded-2xl w-full max-w-3xl p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Choose your avatar</h2>
+          <h2 className="text-2xl font-bold text-white">{t('avatar_selector.title')}</h2>
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/[0.05]"
@@ -87,15 +95,15 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({ value, onChange,
                 key={seed}
                 onClick={() => handleSelect(avatarUrl)}
                 className={cn(
-                  "relative aspect-square rounded-2xl overflow-hidden transition-all duration-300",
-                  "hover:scale-110 hover:shadow-xl hover:shadow-primary-500/20 hover:z-10",
-                  "focus:outline-none focus:ring-2 focus:ring-primary-500/50",
-                  isSelected && "ring-2 ring-primary-500 scale-110 z-10"
+                  'relative aspect-square rounded-2xl overflow-hidden transition-all duration-300',
+                  'hover:scale-110 hover:shadow-xl hover:shadow-primary-500/20 hover:z-10',
+                  'focus:outline-none focus:ring-2 focus:ring-primary-500/50',
+                  isSelected && 'ring-2 ring-primary-500 scale-110 z-10'
                 )}
               >
                 <img
                   src={avatarUrl}
-                  alt={`Avatar ${seed}`}
+                  alt={t('avatar_selector.avatar_alt', { seed })}
                   className="w-full h-full object-cover"
                 />
                 {isSelected && (
@@ -113,13 +121,13 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({ value, onChange,
             onClick={onClose}
             className="px-6 py-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-white/[0.05]"
           >
-            Cancel
+            {t('avatar_selector.cancel')}
           </button>
           <button
             onClick={onClose}
             className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
-            Save
+            {t('avatar_selector.save')}
           </button>
         </div>
       </div>

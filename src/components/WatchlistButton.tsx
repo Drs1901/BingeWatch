@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../utils/cn';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 interface WatchlistButtonProps {
   mediaType: 'movie' | 'tv';
@@ -12,6 +13,7 @@ interface WatchlistButtonProps {
 }
 
 export const WatchlistButton: React.FC<WatchlistButtonProps> = ({ mediaType, mediaId }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -19,7 +21,7 @@ export const WatchlistButton: React.FC<WatchlistButtonProps> = ({ mediaType, med
     ['watchlist', mediaType, mediaId],
     async () => {
       if (!user) return false;
-      
+
       const { data, error } = await supabase
         .from('watchlist')
         .select('*')
@@ -44,7 +46,7 @@ export const WatchlistButton: React.FC<WatchlistButtonProps> = ({ mediaType, med
 
   const { mutate: toggleWatchlist, isLoading: isToggling } = useMutation(
     async () => {
-      if (!user) throw new Error('Not authenticated');
+      if (!user) throw new Error(t('watchlist_button.not_authenticated'));
 
       if (isInWatchlist) {
         const { error } = await supabase
@@ -56,13 +58,11 @@ export const WatchlistButton: React.FC<WatchlistButtonProps> = ({ mediaType, med
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('watchlist')
-          .insert({
-            user_id: user.id,
-            media_type: mediaType,
-            media_id: mediaId,
-          });
+        const { error } = await supabase.from('watchlist').insert({
+          user_id: user.id,
+          media_type: mediaType,
+          media_id: mediaId,
+        });
 
         if (error) {
           // Check if it's a unique constraint violation
@@ -91,12 +91,14 @@ export const WatchlistButton: React.FC<WatchlistButtonProps> = ({ mediaType, med
         // Revert the optimistic update
         queryClient.setQueryData(['watchlist', mediaType, mediaId], context.previousValue);
         console.error('Error updating watchlist:', error);
-        toast.error('Failed to update watchlist');
+        toast.error(t('watchlist_button.failed_to_update'));
       },
       onSuccess: () => {
         queryClient.invalidateQueries(['watchlist']);
         toast.success(
-          isInWatchlist ? 'Removed from watchlist' : 'Added to watchlist',
+          isInWatchlist
+            ? t('watchlist_button.removed')
+            : t('watchlist_button.added'),
           {
             style: {
               background: '#1a1a1a',
@@ -115,7 +117,7 @@ export const WatchlistButton: React.FC<WatchlistButtonProps> = ({ mediaType, med
 
   const handleClick = () => {
     if (!user) {
-      toast.error('Please sign in to add to watchlist', {
+      toast.error(t('watchlist_button.sign_in_required'), {
         style: {
           background: '#1a1a1a',
           color: '#fff',
@@ -132,27 +134,26 @@ export const WatchlistButton: React.FC<WatchlistButtonProps> = ({ mediaType, med
       onClick={handleClick}
       disabled={isLoading || isToggling}
       className={cn(
-        "relative p-3 rounded-lg transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed group",
+        'relative p-3 rounded-lg transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed group',
         isInWatchlist
-          ? "bg-primary-500 text-white"
-          : "bg-white/[0.05] text-gray-400 hover:text-white hover:bg-white/[0.1]"
+          ? 'bg-primary-500 text-white'
+          : 'bg-white/[0.05] text-gray-400 hover:text-white hover:bg-white/[0.1]'
       )}
     >
-      <Bookmark 
-        className={cn(
-          "w-5 h-5 transition-all duration-300",
-          isInWatchlist && "fill-current"
-        )} 
+      <Bookmark
+        className={cn('w-5 h-5 transition-all duration-300', isInWatchlist && 'fill-current')}
       />
       {(isLoading || isToggling) && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
           <div className="w-4 h-4 border-2 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
         </div>
       )}
-      <div className={cn(
-        "absolute inset-0 rounded-lg transition-opacity duration-300",
-        isInWatchlist ? "opacity-0" : "opacity-0 group-hover:opacity-100"
-      )}>
+      <div
+        className={cn(
+          'absolute inset-0 rounded-lg transition-opacity duration-300',
+          isInWatchlist ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
+        )}
+      >
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-500/20 to-transparent animate-glow-line" />
       </div>
     </button>

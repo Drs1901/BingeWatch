@@ -1,31 +1,30 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { Tag, Film, Tv, Loader } from 'lucide-react';
+import { Tag, Film, Tv } from 'lucide-react';
 import { getByGenre, getGenres } from '../services/tmdb';
 import MovieCard from '../components/MovieCard';
 import { SEO } from '../components/SEO';
 import { cn } from '../utils/cn';
+import { useTranslation } from 'react-i18next';
+import { Movie, TVShow } from '../types/tmdb';
 
 export const Genre = () => {
+  const { t, i18n } = useTranslation();
   const { id, type = 'movie' } = useParams<{ id: string; type: 'movie' | 'tv' }>();
   const navigate = useNavigate();
   const [activeType, setActiveType] = React.useState<'movie' | 'tv'>(type);
 
   // Get genre details
-  const { data: genres } = useQuery(
-    ['genres', activeType],
-    () => getGenres(activeType),
-    {
-      staleTime: 24 * 60 * 60 * 1000, // Cache for 24 hours
-    }
-  );
+  const { data: genres } = useQuery(['genres', activeType, i18n.language], () => getGenres(activeType), {
+    staleTime: 24 * 60 * 60 * 1000, // Cache for 24 hours
+  });
 
-  const currentGenre = genres?.find(g => g.id === parseInt(id!));
+  const currentGenre = genres?.find((g) => g.id === parseInt(id!));
 
   // Get content by genre
-  const { data: items, isLoading } = useQuery(
-    ['genre', activeType, id],
+  const { data: items, isLoading } = useQuery<Movie[] | TVShow[]>(
+    ['genre', activeType, id, i18n.language],
     () => getByGenre(activeType, parseInt(id!)),
     {
       enabled: !!id,
@@ -33,9 +32,11 @@ export const Genre = () => {
     }
   );
 
+  const mediaTypeLocale = activeType === 'movie' ? t('genre.movies') : t('genre.tv_shows');
+
   const tabs = [
-    { id: 'movie' as const, label: 'Movies', icon: Film },
-    { id: 'tv' as const, label: 'TV Shows', icon: Tv },
+    { id: 'movie' as const, label: t('genre.movies'), icon: Film },
+    { id: 'tv' as const, label: t('genre.tv_shows'), icon: Tv },
   ];
 
   const handleTabChange = (newType: 'movie' | 'tv') => {
@@ -46,9 +47,18 @@ export const Genre = () => {
   return (
     <>
       <SEO
-        title={`${currentGenre?.name || 'Genre'} ${activeType === 'movie' ? 'Movies' : 'TV Shows'}`}
-        description={`Watch ${currentGenre?.name} ${activeType === 'movie' ? 'movies' : 'TV shows'} online. Stream the best ${currentGenre?.name.toLowerCase()} content in HD quality.`}
-        keywords={`${currentGenre?.name}, ${activeType}, streaming, watch online, ${currentGenre?.name.toLowerCase()} ${activeType}`}
+        title={t('genre.title', {
+          genreName: currentGenre?.name || 'Genre',
+          mediaType: mediaTypeLocale,
+        })}
+        description={t('genre.seo_description', {
+          genreName: currentGenre?.name,
+          mediaType: mediaTypeLocale.toLowerCase(),
+        })}
+        keywords={t('genre.seo_keywords', {
+          genreName: currentGenre?.name,
+          mediaType: activeType,
+        })}
         type="website"
       />
 
@@ -56,7 +66,10 @@ export const Genre = () => {
         <div className="flex items-center gap-3 mb-8">
           <Tag className="w-6 h-6 text-primary-500" />
           <h1 className="text-2xl font-bold text-white">
-            {currentGenre?.name || 'Genre'} {activeType === 'movie' ? 'Movies' : 'TV Shows'}
+            {t('genre.title', {
+              genreName: currentGenre?.name || 'Genre',
+              mediaType: mediaTypeLocale,
+            })}
           </h1>
         </div>
 
@@ -66,10 +79,10 @@ export const Genre = () => {
               key={tabId}
               onClick={() => handleTabChange(tabId)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200",
+                'flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200',
                 activeType === tabId
-                  ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25"
-                  : "text-gray-400 hover:text-white hover:bg-white/[0.05]"
+                  ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
+                  : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
               )}
             >
               <Icon className="w-4 h-4" />
@@ -91,9 +104,9 @@ export const Genre = () => {
         ) : !items || items.length === 0 ? (
           <div className="text-center py-12 bg-white/[0.03] rounded-xl">
             <Tag className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">No content found</h2>
+            <h2 className="text-xl font-semibold text-white mb-2">{t('genre.no_content')}</h2>
             <p className="text-gray-400">
-              No {activeType === 'movie' ? 'movies' : 'TV shows'} found in this genre.
+              {t('genre.no_content_description', { mediaType: mediaTypeLocale.toLowerCase() })}
             </p>
           </div>
         ) : (

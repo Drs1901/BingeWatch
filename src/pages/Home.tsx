@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
+import { useTranslation } from 'react-i18next';
 import { Film, Tv, TrendingUp, Star, Calendar, Play, Info, ChevronRight, Clapperboard } from 'lucide-react';
 import { getTrending, getTopRated } from '../services/tmdb';
 import MovieCard from '../components/MovieCard';
@@ -16,6 +17,7 @@ interface FeaturedBannerProps {
 }
 
 const FeaturedBanner: React.FC<FeaturedBannerProps> = ({ items, mediaType }) => {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -113,13 +115,13 @@ const FeaturedBanner: React.FC<FeaturedBannerProps> = ({ items, mediaType }) => 
                 <div className="flex items-center gap-2 sm:gap-4 pt-2">
                   <button className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-primary-600 text-white rounded-lg sm:rounded-xl hover:bg-primary-700 transition-all duration-300 inline-flex items-center gap-2 text-sm sm:text-base font-medium shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:scale-105 hover:-translate-y-0.5">
                     <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
-                    <span className="hidden sm:inline">Watch</span>
-                    <span className="sm:hidden">Play</span>
+                    <span className="hidden sm:inline">{t('home.watch')}</span>
+                    <span className="sm:hidden">{t('home.play')}</span>
                   </button>
                   <button className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-white/10 text-white rounded-lg sm:rounded-xl hover:bg-white/20 transition-all duration-300 inline-flex items-center gap-2 text-sm sm:text-base font-medium backdrop-blur-sm hover:scale-105 hover:-translate-y-0.5">
                     <Info className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="hidden sm:inline">More Info</span>
-                    <span className="sm:hidden">Info</span>
+                    <span className="hidden sm:inline">{t('home.more_info')}</span>
+                    <span className="sm:hidden">{t('home.info')}</span>
                   </button>
                 </div>
               </div>
@@ -159,6 +161,7 @@ interface CategoryProps {
 }
 
 const Category: React.FC<CategoryProps> = ({ title, icon: Icon, items, isLoading, viewAllLink, mediaType }) => {
+  const { t } = useTranslation();
   const [isHovered, setIsHovered] = React.useState(false);
 
   return (
@@ -181,7 +184,7 @@ const Category: React.FC<CategoryProps> = ({ title, icon: Icon, items, isLoading
             onMouseLeave={() => setIsHovered(false)}
           >
             <span className="relative">
-              View All
+              {t('home.view_all')}
               <span className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-primary-500/0 via-primary-500/50 to-primary-500/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
             </span>
             <ChevronRight className={cn(
@@ -219,8 +222,9 @@ const Category: React.FC<CategoryProps> = ({ title, icon: Icon, items, isLoading
 };
 
 export const Home = () => {
+  const { t, i18n } = useTranslation();
   const { data: trendingMovies, isLoading: isTrendingMoviesLoading } = useQuery(
-    'trendingMovies',
+    ['trendingMovies', i18n.language],
     () => getTrending('movie'),
     {
       staleTime: 5 * 60 * 1000,
@@ -229,7 +233,7 @@ export const Home = () => {
   );
   
   const { data: trendingTVShows, isLoading: isTrendingTVShowsLoading } = useQuery(
-    'trendingTVShows', 
+    ['trendingTVShows', i18n.language],
     () => getTrending('tv'),
     {
       staleTime: 5 * 60 * 1000,
@@ -238,7 +242,7 @@ export const Home = () => {
   );
   
   const { data: topRatedMovies, isLoading: isTopRatedMoviesLoading } = useQuery(
-    'topRatedMovies', 
+    ['topRatedMovies', i18n.language],
     () => getTopRated('movie'),
     {
       staleTime: 10 * 60 * 1000,
@@ -247,7 +251,7 @@ export const Home = () => {
   );
 
   const { data: topRatedTVShows, isLoading: isTopRatedTVShowsLoading } = useQuery(
-    'topRatedTVShows', 
+    ['topRatedTVShows', i18n.language],
     () => getTopRated('tv'),
     {
       staleTime: 10 * 60 * 1000,
@@ -261,46 +265,46 @@ export const Home = () => {
   const categories = [
     {
       id: 'movies',
-      title: 'Popular Movies',
-      description: 'Watch the latest and most popular movies online',
+      title: t('home.popular_movies'),
+      description: t('home.popular_movies_description'),
       icon: Film,
       links: [
-        { href: '/trending?type=movie', text: 'Trending Movies' },
-        { href: '/latest?type=movie', text: 'Latest Releases' },
-        { href: '/top-rated?type=movie', text: 'Top Rated Movies' },
+        { href: '/trending?type=movie', text: t('home.trending_movies') },
+        { href: '/latest?type=movie', text: t('home.latest_releases') },
+        { href: '/top-rated?type=movie', text: t('home.top_rated_movies') },
       ]
     },
     {
       id: 'tv',
-      title: 'TV Shows',
-      description: 'Stream your favorite TV series and shows',
+      title: t('home.tv_shows'),
+      description: t('home.tv_shows_description'),
       icon: Tv,
       links: [
-        { href: '/trending?type=tv', text: 'Trending Shows' },
-        { href: '/latest?type=tv', text: 'Currently Airing' },
-        { href: '/top-rated?type=tv', text: 'Top Rated Shows' },
+        { href: '/trending?type=tv', text: t('home.trending_shows') },
+        { href: '/latest?type=tv', text: t('home.currently_airing') },
+        { href: '/top-rated?type=tv', text: t('home.top_rated_shows') },
       ]
     },
     {
       id: 'genres',
-      title: 'Browse by Genre',
-      description: 'Discover content across different genres',
+      title: t('home.browse_by_genre'),
+      description: t('home.browse_by_genre_description'),
       icon: Clapperboard,
       links: [
-        { href: '/genre/28/movie', text: 'Action' },
-        { href: '/genre/35/movie', text: 'Comedy' },
-        { href: '/genre/18/movie', text: 'Drama' },
+        { href: '/genre/28/movie', text: t('home.genre_action') },
+        { href: '/genre/35/movie', text: t('home.genre_comedy') },
+        { href: '/genre/18/movie', text: t('home.genre_drama') },
       ]
     }
   ];
 
   // Create enhanced SEO props with trending titles for better indexing
   const seoDescription = trendingMovies?.length 
-    ? `Stream the latest movies and TV shows in HD quality on BingeWatch. Now trending: ${trendingMovies.slice(0, 3).map((m: Movie) => m.title).join(', ')}. Watch your favorite content anytime, anywhere.`
-    : "Stream the latest movies and TV shows in HD quality on BingeWatch. Watch your favorite content anytime, anywhere. Free streaming of popular movies and TV series.";
+    ? t('home.seo_description_trending', { trending: trendingMovies.slice(0, 3).map((m: Movie) => m.title).join(', ') })
+    : t('home.seo_description_default');
 
   const seoProps = createSEOProps({
-    title: "Watch Movies & TV Shows Online",
+    title: t('home.seo_title'),
     description: seoDescription,
     type: "website"
   });
@@ -310,7 +314,7 @@ export const Home = () => {
       <SEO {...seoProps} />
 
       <main className="min-h-screen bg-[#0f0f0f]">
-        <h1 className="sr-only">BingeWatch - Watch Movies & TV Shows Online</h1>
+        <h1 className="sr-only">{t('home.sr_only_title')}</h1>
         
         <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
           {/* Featured Content Carousel */}
@@ -320,7 +324,7 @@ export const Home = () => {
 
           {/* Quick Navigation */}
           <section className="mb-16">
-            <h2 className="sr-only">Quick Navigation</h2>
+            <h2 className="sr-only">{t('home.quick_navigation')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {categories.map((category) => (
                 <div key={category.id} className="bg-white/[0.03] rounded-xl p-6 hover:bg-white/[0.05] transition-colors">
@@ -354,7 +358,7 @@ export const Home = () => {
           {/* Categories */}
           <div className="space-y-8 sm:space-y-12 md:space-y-16">
             <Category
-              title="Trending Movies"
+              title={t('home.category_trending_movies')}
               icon={TrendingUp}
               items={trendingMovies}
               isLoading={isTrendingMoviesLoading}
@@ -363,7 +367,7 @@ export const Home = () => {
             />
 
             <Category
-              title="Trending TV Shows"
+              title={t('home.category_trending_tv_shows')}
               icon={Tv}
               items={trendingTVShows}
               isLoading={isTrendingTVShowsLoading}
@@ -372,7 +376,7 @@ export const Home = () => {
             />
 
             <Category
-              title="Top Rated Movies"
+              title={t('home.category_top_rated_movies')}
               icon={Star}
               items={topRatedMovies}
               isLoading={isTopRatedMoviesLoading}
@@ -381,7 +385,7 @@ export const Home = () => {
             />
 
             <Category
-              title="Top Rated TV Shows"
+              title={t('home.category_top_rated_tv_shows')}
               icon={Star}
               items={topRatedTVShows}
               isLoading={isTopRatedTVShowsLoading}
