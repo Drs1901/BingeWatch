@@ -20,6 +20,7 @@ import { Watchlist } from './pages/Watchlist';
 import { History } from './pages/History';
 import { NotFound } from './pages/404';
 import { Layout } from './components/Layout';
+import { WatchLayout } from './components/WatchLayout';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +46,13 @@ function App() {
               <Route path="/auth/login" element={<Login />} />
               <Route path="/auth/register" element={<Register />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              
+              {/* Media routes - must be outside Layout for direct access */}
+              <Route path="/:mediaType/:id" element={
+                <WatchLayout>
+                  <Watch />
+                </WatchLayout>
+              } />
               
               {/* Redirect .html and .php to clean URLs */}
               <Route path="*.html" element={<Navigate to="/" replace />} />
@@ -81,7 +89,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route path=":mediaType/:id" element={<Watch />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

@@ -15,7 +15,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,svg,png}'],
         cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [/\/api\//],
-        navigateFallback: 'index.html',
+        navigateFallback: '/index.html',
       }
     }),
     sitemap({
@@ -78,5 +78,6 @@ export default defineConfig({
   preview: {
     port: 4173,
     open: true
-  }
+  },
+  base: './'
 });

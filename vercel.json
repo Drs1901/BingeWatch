@@ -18,9 +18,6 @@
       "dest": "/api/thumbnail.js?path=$1"
     },
     {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
       "dest": "/index.html"
     }

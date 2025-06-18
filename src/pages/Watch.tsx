@@ -184,7 +184,7 @@ export const Watch = () => {
     <>
       <SEO {...seoProps} />
 
-      <main className="min-h-screen bg-[#0f0f0f]">
+      <div>
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-black/80 to-transparent z-10" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.1),transparent_70%)] z-20" />
@@ -416,7 +416,7 @@ export const Watch = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </>
   );
 };
