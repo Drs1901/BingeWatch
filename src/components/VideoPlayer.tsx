@@ -15,7 +15,7 @@ interface VideoPlayerProps {
   title: string;
 }
 
-type PlayerSource = 'videasy' | 'vidsrc' | 'moviesapi' | 'vidora';
+type PlayerSource = 'videasy' | 'vidsrcme' | 'vidsrc' | 'moviesapi' | 'vidora';
 
 interface PlayerConfig {
   name: string;
@@ -42,6 +42,34 @@ const PLAYERS: Record<PlayerSource, PlayerConfig> = {
     adBlockingMode: 'strict',
     getUrl: ({ mediaType, id, season, episode }) => {
       const baseUrl = 'https://player.videasy.net';
+      const params = new URLSearchParams({
+        color: '3B82F6',
+        autoplayNextEpisode: 'true',
+        episodeSelector: 'true',
+        adblock: 'true',
+        hideAds: 'true',
+      });
+      if (mediaType === 'movie') {
+        return `${baseUrl}/movie/${id}?${params}`;
+      } else {
+        return `${baseUrl}/tv/${id}/${season}/${episode}?${params}&nextEpisode=true`;
+      }
+    },
+  },
+    vidsrcme: {
+    name: 'VidsrcMe',
+    icon: Film,
+    useSandbox: false,
+    sandboxPermissions: [
+      'allow-same-origin',
+      'allow-scripts',
+      'allow-forms',
+      'allow-presentation',
+      'allow-modals',
+    ],
+    adBlockingMode: 'strict',
+    getUrl: ({ mediaType, id, season, episode }) => {
+      const baseUrl = 'https://vidsrc.io/';
       const params = new URLSearchParams({
         color: '3B82F6',
         autoplayNextEpisode: 'true',
