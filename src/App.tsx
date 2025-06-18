@@ -52,13 +52,13 @@ function App() {
               
               <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/trending" element={<Trending />} />
-                <Route path="/latest" element={<Latest />} />
-                <Route path="/top-rated" element={<TopRated />} />
-                <Route path="/genre/:id/:type?" element={<Genre />} />
+                <Route path="search" element={<Search />} />
+                <Route path="trending" element={<Trending />} />
+                <Route path="latest" element={<Latest />} />
+                <Route path="top-rated" element={<TopRated />} />
+                <Route path="genre/:id/:type?" element={<Genre />} />
                 <Route
-                  path="/profile"
+                  path="profile"
                   element={
                     <ProtectedRoute>
                       <Profile />
@@ -66,7 +66,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/watchlist"
+                  path="watchlist"
                   element={
                     <ProtectedRoute>
                       <Watchlist />
@@ -74,14 +74,14 @@ function App() {
                   }
                 />
                 <Route
-                  path="/history"
+                  path="history"
                   element={
                     <ProtectedRoute>
                       <History />
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/:mediaType/:id" element={<Watch />} />
+                <Route path=":mediaType/:id" element={<Watch />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
